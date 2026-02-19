@@ -7,11 +7,15 @@ const App = {
   pollData: null,
   listeners: [],        // cleanup functions
   myAnswer: null,
+  dashboardPolls: [],
 
   // ── Init ──────────────────────────────────────────────
 
   async init() {
     await Sync.init();
+    await Sync.waitForAuth();
+
+    Sync.onAuth(user => this._onAuthStateChanged(user));
 
     // Check URL for ?join=CODE
     const params = new URLSearchParams(window.location.search);
@@ -27,6 +31,8 @@ const App = {
     this._bindCreate();
     this._bindHost();
     this._bindJoin();
+    this._bindAuth();
+    this._bindDashboard();
     this._bindMisc();
   },
 
@@ -36,6 +42,195 @@ const App = {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const el = document.getElementById(`screen-${id}`);
     if (el) el.classList.add('active');
+  },
+
+  // ── Auth State ──────────────────────────────────────
+
+  _onAuthStateChanged(user) {
+    const signInBtn   = document.getElementById('btnSignIn');
+    const profileArea = document.getElementById('userProfile');
+    const avatarImg   = document.getElementById('userAvatar');
+
+    if (user) {
+      signInBtn.style.display = 'none';
+      profileArea.style.display = 'flex';
+      avatarImg.src = user.photoURL || '';
+      avatarImg.alt = user.displayName || 'User';
+
+      document.getElementById('dropdownAvatar').src = user.photoURL || '';
+      document.getElementById('dropdownName').textContent = user.displayName || 'User';
+      document.getElementById('dropdownEmail').textContent = user.email || '';
+    } else {
+      signInBtn.style.display = 'inline-flex';
+      profileArea.style.display = 'none';
+      document.getElementById('userDropdown').style.display = 'none';
+    }
+  },
+
+  _bindAuth() {
+    document.getElementById('btnSignIn').onclick = async () => {
+      await Sync.signInWithGoogle();
+    };
+
+    document.getElementById('btnUserMenu').onclick = (e) => {
+      e.stopPropagation();
+      const dropdown = document.getElementById('userDropdown');
+      const isOpen = dropdown.style.display !== 'none';
+      dropdown.style.display = isOpen ? 'none' : 'block';
+
+      if (!isOpen) {
+        const rect = document.getElementById('btnUserMenu').getBoundingClientRect();
+        dropdown.style.top = (rect.bottom + 8) + 'px';
+        dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+      }
+    };
+
+    document.addEventListener('click', () => {
+      document.getElementById('userDropdown').style.display = 'none';
+    });
+
+    document.getElementById('btnMyPolls').onclick = () => {
+      this._openDashboard();
+    };
+
+    document.getElementById('btnDropdownMyPolls').onclick = () => {
+      document.getElementById('userDropdown').style.display = 'none';
+      this._openDashboard();
+    };
+
+    document.getElementById('btnSignOut').onclick = async () => {
+      document.getElementById('userDropdown').style.display = 'none';
+      await Sync.signOut();
+      this.showScreen('home');
+    };
+  },
+
+  // ── Dashboard ──────────────────────────────────────
+
+  _bindDashboard() {
+    document.getElementById('btnBackFromDashboard').onclick = () => {
+      this.showScreen('home');
+    };
+
+    document.getElementById('btnEmptyCreate').onclick = () => {
+      this.showScreen('create');
+    };
+
+    document.getElementById('btnBackFromPollDetail').onclick = () => {
+      this._openDashboard();
+    };
+  },
+
+  async _openDashboard() {
+    if (!Sync.isLoggedIn()) return;
+
+    const listEl    = document.getElementById('dashboardList');
+    const emptyEl   = document.getElementById('dashboardEmpty');
+    const loadingEl = document.getElementById('dashboardLoading');
+
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'none';
+    loadingEl.style.display = 'flex';
+
+    this.showScreen('dashboard');
+
+    try {
+      const polls = await Poll.getUserPolls(Sync.currentUser.uid);
+      this.dashboardPolls = polls;
+
+      loadingEl.style.display = 'none';
+
+      if (polls.length === 0) {
+        emptyEl.style.display = 'flex';
+        return;
+      }
+
+      polls.forEach(poll => {
+        const card = document.createElement('div');
+        card.className = 'poll-card';
+        card.dataset.code = poll.code;
+
+        const statusClass = poll.status === 'ended' ? 'status-ended'
+                          : (poll.status === 'active' || poll.status === 'showing_results') ? 'status-active'
+                          : 'status-lobby';
+        const statusLabel = poll.status === 'ended' ? 'Ended'
+                          : (poll.status === 'active' || poll.status === 'showing_results') ? 'Live'
+                          : 'Lobby';
+
+        const date = poll.createdAt
+          ? new Date(poll.createdAt).toLocaleDateString('en-US', {
+              month: 'short', day: 'numeric', year: 'numeric'
+            })
+          : '';
+
+        card.innerHTML = `
+          <div class="poll-card-header">
+            <h3 class="poll-card-title">${this._escapeHtml(poll.title)}</h3>
+            <span class="poll-card-status ${statusClass}">${statusLabel}</span>
+          </div>
+          <div class="poll-card-meta">
+            <span>${poll.questionCount} question${poll.questionCount !== 1 ? 's' : ''}</span>
+            <span class="meta-dot">·</span>
+            <span>${poll.totalVotes} vote${poll.totalVotes !== 1 ? 's' : ''}</span>
+            ${date ? `<span class="meta-dot">·</span><span>${date}</span>` : ''}
+          </div>
+        `;
+
+        card.onclick = () => this._openPollDetail(poll);
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      console.error('[App] Failed to load dashboard:', e);
+      loadingEl.style.display = 'none';
+      listEl.innerHTML = '<p class="error-msg">Failed to load polls. Try again.</p>';
+    }
+  },
+
+  _openPollDetail(poll) {
+    document.getElementById('pollDetailTitle').textContent = poll.title;
+
+    const metaEl = document.getElementById('pollDetailMeta');
+    const date = poll.createdAt
+      ? new Date(poll.createdAt).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric'
+        })
+      : '';
+    metaEl.innerHTML = `
+      <span>Code: ${poll.code}</span>
+      <span class="meta-dot">·</span>
+      <span>${poll.totalVotes} total votes</span>
+      ${date ? `<span class="meta-dot">·</span><span>${date}</span>` : ''}
+    `;
+
+    const questionsEl = document.getElementById('pollDetailQuestions');
+    questionsEl.innerHTML = '';
+
+    poll.questions.forEach((q, i) => {
+      const block = document.createElement('div');
+      block.className = 'detail-question-block';
+
+      const responses = poll.responses ? poll.responses[q.id] : null;
+      const counts = Poll.tallyVotes(responses, q.options);
+      const totalQ = Object.values(counts).reduce((a, b) => a + b, 0);
+
+      block.innerHTML = `
+        <div class="detail-question-label">Question ${i + 1}</div>
+        <h3 class="detail-question-text">${this._escapeHtml(q.text)}</h3>
+        <div class="detail-chart chart-container"></div>
+        <div class="detail-vote-count">${totalQ} vote${totalQ !== 1 ? 's' : ''}</div>
+      `;
+
+      questionsEl.appendChild(block);
+      Charts.render(block.querySelector('.detail-chart'), q.options, counts, totalQ || 1);
+    });
+
+    this.showScreen('poll-detail');
+  },
+
+  _escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   },
 
   // ── Home ─────────────────────────────────────────────

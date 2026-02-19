@@ -19,9 +19,28 @@
   ══════════════════════════════════════ -->
   <div id="screen-home" class="screen active">
     <div class="home-layout">
-      <div class="home-brand">
-        <span class="brand-dot"></span>
-        <span class="brand-name">LivePoll</span>
+      <div class="home-top-bar">
+        <div class="home-brand">
+          <span class="brand-dot"></span>
+          <span class="brand-name">LivePoll</span>
+        </div>
+        <div id="authArea" class="auth-area">
+          <button class="btn-auth" id="btnSignIn">
+            <svg class="google-icon" width="16" height="16" viewBox="0 0 48 48">
+              <path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 000 24c0 3.77.9 7.35 2.56 10.54l7.97-5.95z"/>
+              <path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.95C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Sign in
+          </button>
+          <div id="userProfile" class="user-profile" style="display:none">
+            <button class="btn-ghost btn-sm" id="btnMyPolls">My Polls</button>
+            <div class="user-avatar-wrap" id="btnUserMenu">
+              <img id="userAvatar" class="user-avatar" src="" alt="avatar">
+            </div>
+          </div>
+        </div>
       </div>
       <div class="home-hero">
         <h1 class="hero-title">
@@ -56,6 +75,60 @@
         </div>
         <div class="demo-badge">🔴 142 live votes</div>
       </div>
+    </div>
+  </div>
+
+  <!-- User dropdown menu -->
+  <div id="userDropdown" class="user-dropdown" style="display:none">
+    <div class="dropdown-user-info">
+      <img id="dropdownAvatar" class="user-avatar-lg" src="" alt="">
+      <div>
+        <div id="dropdownName" class="dropdown-name"></div>
+        <div id="dropdownEmail" class="dropdown-email"></div>
+      </div>
+    </div>
+    <hr class="dropdown-divider">
+    <button class="dropdown-item" id="btnDropdownMyPolls">My Polls</button>
+    <button class="dropdown-item dropdown-signout" id="btnSignOut">Sign Out</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN: MY POLLS DASHBOARD
+  ══════════════════════════════════════ -->
+  <div id="screen-dashboard" class="screen">
+    <div class="dashboard-layout">
+      <div class="screen-header">
+        <button class="btn-back" id="btnBackFromDashboard">← Back</button>
+        <h2 class="screen-title">My Polls</h2>
+        <div></div>
+      </div>
+      <div id="dashboardEmpty" class="dashboard-empty" style="display:none">
+        <div class="empty-icon">📊</div>
+        <h3 class="empty-title">No polls yet</h3>
+        <p class="empty-sub">Create your first poll and it will show up here.</p>
+        <button class="btn btn-primary" id="btnEmptyCreate">Create a Poll →</button>
+      </div>
+      <div id="dashboardList" class="dashboard-list"></div>
+      <div id="dashboardLoading" class="dashboard-loading">
+        <div class="waiting-dot"></div>
+        <div class="waiting-dot"></div>
+        <div class="waiting-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN: POLL DETAIL (Past Results)
+  ══════════════════════════════════════ -->
+  <div id="screen-poll-detail" class="screen">
+    <div class="poll-detail-layout">
+      <div class="screen-header">
+        <button class="btn-back" id="btnBackFromPollDetail">← Back</button>
+        <h2 class="screen-title" id="pollDetailTitle">Poll Results</h2>
+        <div></div>
+      </div>
+      <div class="poll-detail-meta" id="pollDetailMeta"></div>
+      <div id="pollDetailQuestions" class="poll-detail-questions"></div>
     </div>
   </div>
 
@@ -227,6 +300,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 

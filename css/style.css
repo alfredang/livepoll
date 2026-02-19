@@ -697,6 +697,242 @@ body {
 .ended-sub { color: var(--text-dim); margin-bottom: 8px; }
 
 /* ══════════════════════════════════════════════
+   AUTH & USER PROFILE
+══════════════════════════════════════════════ */
+.home-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-auth:hover {
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+.google-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar-wrap {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--border);
+  transition: border-color 0.2s;
+}
+.user-avatar-wrap:hover { border-color: var(--lime); }
+
+.user-avatar { width: 100%; height: 100%; object-fit: cover; }
+
+/* User dropdown */
+.user-dropdown {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.2s ease-out;
+}
+
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.user-avatar-lg {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dropdown-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.dropdown-email { font-size: 0.78rem; color: var(--text-muted); }
+
+.dropdown-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+
+.dropdown-item {
+  display: block; width: 100%;
+  padding: 10px 12px;
+  background: none; border: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  cursor: pointer; text-align: left;
+  transition: background 0.15s;
+}
+.dropdown-item:hover { background: var(--bg3); }
+
+.dropdown-signout { color: var(--coral); }
+.dropdown-signout:hover { background: rgba(255,107,71,0.08); }
+
+/* ══════════════════════════════════════════════
+   DASHBOARD (MY POLLS)
+══════════════════════════════════════════════ */
+.dashboard-layout {
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px;
+}
+
+.dashboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-loading {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 0;
+}
+
+.dashboard-empty {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 24px;
+  gap: 12px;
+  display: none;
+}
+
+.empty-icon { font-size: 3rem; margin-bottom: 4px; }
+.empty-title { font-family: var(--font-display); font-size: 1.5rem; }
+.empty-sub { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 8px; }
+
+/* Poll cards */
+.poll-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: fadeUp 0.25s ease-out;
+}
+.poll-card:hover {
+  border-color: var(--lime);
+  transform: translateX(4px);
+  background: rgba(200,255,87,0.03);
+}
+
+.poll-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.poll-card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem; line-height: 1.3;
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.poll-card-status {
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 3px 10px; border-radius: 50px; flex-shrink: 0;
+}
+
+.status-ended { background: var(--bg3); color: var(--text-dim); }
+.status-active { background: rgba(200,255,87,0.12); color: var(--lime); }
+.status-lobby { background: rgba(255,200,87,0.12); color: #ffc857; }
+
+.poll-card-meta {
+  display: flex; align-items: center;
+  gap: 6px; font-size: 0.82rem; color: var(--text-muted);
+}
+
+.meta-dot { color: var(--text-muted); }
+
+/* ══════════════════════════════════════════════
+   POLL DETAIL (PAST RESULTS)
+══════════════════════════════════════════════ */
+.poll-detail-layout {
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px;
+}
+
+.poll-detail-meta {
+  display: flex; align-items: center;
+  gap: 6px; font-size: 0.85rem;
+  color: var(--text-dim); margin-bottom: 32px;
+}
+
+.poll-detail-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.detail-question-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-question-label {
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--lime);
+}
+
+.detail-question-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem; line-height: 1.3;
+}
+
+.detail-vote-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -707,6 +943,8 @@ body {
   .host-header { flex-wrap: wrap; }
   .host-question-text { font-size: 1.5rem; }
   .host-controls { width: 100%; justify-content: flex-end; }
+  .poll-card-title { font-size: 1rem; }
+  .poll-detail-layout, .dashboard-layout { padding: 24px 16px; }
 }
 
 @media (max-width: 480px) {
@@ -715,4 +953,7 @@ body {
   .input-code-inline { width: 100%; }
   .room-code-display { font-size: 3.5rem; letter-spacing: 6px; }
   .vote-option { padding: 16px 18px; }
+  .home-top-bar { gap: 8px; }
+  .btn-auth { padding: 6px 12px; font-size: 0.8rem; }
+  .user-dropdown { min-width: 200px; left: 16px; right: 16px; }
 }

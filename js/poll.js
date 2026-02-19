@@ -23,7 +23,17 @@ const Poll = {
       responses: {},
       createdAt: Sync.serverTime()
     };
+
+    if (Sync.isLoggedIn()) {
+      poll.userId = Sync.currentUser.uid;
+    }
+
     await Sync.set(`polls/${code}`, poll);
+
+    if (Sync.isLoggedIn()) {
+      await Sync.set(`users/${Sync.currentUser.uid}/polls/${code}`, true);
+    }
+
     return code;
   },
 
@@ -67,5 +77,39 @@ const Poll = {
       });
     }
     return counts;
+  },
+
+  async getUserPolls(uid) {
+    const index = await Sync.get(`users/${uid}/polls`);
+    if (!index) return [];
+
+    const codes = Object.keys(index);
+    const polls = await Promise.all(
+      codes.map(async code => {
+        const poll = await Sync.get(`polls/${code}`);
+        if (!poll) return null;
+        return {
+          code,
+          title: poll.title,
+          status: poll.status,
+          createdAt: poll.createdAt,
+          questionCount: poll.questions ? poll.questions.length : 0,
+          totalVotes: Poll._countTotalVotes(poll),
+          questions: poll.questions,
+          responses: poll.responses
+        };
+      })
+    );
+
+    return polls.filter(Boolean).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  },
+
+  _countTotalVotes(poll) {
+    if (!poll.responses) return 0;
+    let total = 0;
+    for (const qId of Object.keys(poll.responses)) {
+      total += Object.keys(poll.responses[qId]).length;
+    }
+    return total;
   }
 };

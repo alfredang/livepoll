@@ -48,6 +48,8 @@
 | 🧭 **Multi-Question** | Create polls with multiple questions |
 | 👥 **Live Presence** | See participant count in real-time |
 | ✅ **Answer Highlight** | Your choice highlighted in results |
+| 🔐 **Google Sign-In** | Optional login to save polls to your account |
+| 📋 **My Polls Dashboard** | View all your past polls, results & vote data |
 
 ---
 
@@ -77,8 +79,8 @@ livepoll/
 │   └── style.css               # DM Sans + DM Serif Text, dark editorial theme
 ├── js/
 │   ├── config.js               # Firebase configuration
-│   ├── sync.js                 # Firebase real-time wrapper
-│   ├── poll.js                 # Poll CRUD & vote logic
+│   ├── sync.js                 # Firebase real-time wrapper + auth
+│   ├── poll.js                 # Poll CRUD, vote logic & user polls
 │   ├── charts.js               # Animated bar chart renderer
 │   └── app.js                  # Screen management & event handling
 ├── tests/
@@ -97,6 +99,7 @@ livepoll/
 | Layer | Technology |
 |-------|-----------|
 | **Frontend** | HTML5, CSS3, Vanilla JavaScript (ES6+) |
+| **Auth** | Firebase Authentication (Google Sign-In) |
 | **Real-time** | Firebase Realtime Database |
 | **Typography** | DM Serif Text + DM Sans (Google Fonts) |
 | **QR Codes** | QRCode.js (CDN) |
@@ -137,7 +140,9 @@ python3 .claude/test-app/scripts/with_server.py \
 1. Create a project at [Firebase Console](https://console.firebase.google.com)
 2. Add a Web App → copy the config into `js/config.js`
 3. Enable **Realtime Database** → Start in test mode
-4. Deploy and you're live!
+4. Enable **Authentication** → Sign-in method → Enable **Google**
+5. Add your domain to **Authorized domains** (e.g. `yourdomain.github.io`)
+6. Deploy and you're live!
 
 ---
 

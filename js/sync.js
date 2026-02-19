@@ -4,13 +4,39 @@
 const Sync = {
   db: null,
   sessionId: null,
+  auth: null,
+  currentUser: null,
+  authReady: false,
+  _authReadyPromise: null,
+  _authListeners: [],
 
   async init() {
     if (!SYNC_ENABLED) return false;
     try {
       if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
       this.db = firebase.database();
+      this.auth = firebase.auth();
+
+      // Generate fallback anonymous session ID
       this.sessionId = this.sessionId || ('u' + Math.random().toString(36).slice(2, 9));
+
+      // Create a one-time promise that resolves when auth state is first known
+      this._authReadyPromise = new Promise(resolve => {
+        this.auth.onAuthStateChanged(user => {
+          this.currentUser = user;
+          if (user) {
+            this.sessionId = user.uid;
+          } else {
+            this.sessionId = 'u' + Math.random().toString(36).slice(2, 9);
+          }
+          if (!this.authReady) {
+            this.authReady = true;
+            resolve(user);
+          }
+          this._authListeners.forEach(cb => cb(user));
+        });
+      });
+
       return true;
     } catch (e) {
       console.error('[Sync] init failed:', e);
@@ -37,5 +63,40 @@ const Sync = {
 
   offAll(path) { const r = this.ref(path); if (r) r.off(); },
 
-  serverTime() { return firebase.database.ServerValue.TIMESTAMP; }
+  serverTime() { return firebase.database.ServerValue.TIMESTAMP; },
+
+  waitForAuth() {
+    return this._authReadyPromise || Promise.resolve(null);
+  },
+
+  async signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const result = await this.auth.signInWithPopup(provider);
+      return result.user;
+    } catch (e) {
+      console.error('[Sync] Google sign-in failed:', e);
+      return null;
+    }
+  },
+
+  async signOut() {
+    try {
+      await this.auth.signOut();
+    } catch (e) {
+      console.error('[Sync] sign-out failed:', e);
+    }
+  },
+
+  onAuth(cb) {
+    this._authListeners.push(cb);
+    if (this.authReady) cb(this.currentUser);
+    return () => {
+      this._authListeners = this._authListeners.filter(fn => fn !== cb);
+    };
+  },
+
+  isLoggedIn() {
+    return !!this.currentUser;
+  }
 };
