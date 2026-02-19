@@ -19,7 +19,11 @@
 
 ## Screenshot
 
-<!-- ![Screenshot](screenshots/home.png) -->
+![Home](screenshots/home.png)
+
+| Create Poll | Join Poll | Mobile |
+|:-----------:|:---------:|:------:|
+| ![Create](screenshots/create.png) | ![Join](screenshots/join.png) | ![Mobile](screenshots/home_mobile.png) |
 
 > 🌐 **[Try it live →](https://alfredang.github.io/livepoll/)**
 
