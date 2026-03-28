@@ -72,8 +72,7 @@ const Sync = {
   async signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-      const result = await this.auth.signInWithPopup(provider);
-      return result.user;
+      await this.auth.signInWithRedirect(provider);
     } catch (e) {
       console.error('[Sync] Google sign-in failed:', e);
       return null;
