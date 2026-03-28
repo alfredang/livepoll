@@ -232,6 +232,25 @@ const App = {
       Charts.render(block.querySelector('.detail-chart'), q.options, counts, totalQ || 1);
     });
 
+    // Show duplicate only for ended polls, show QR sidebar for live polls
+    const isLive = poll.status === 'active' || poll.status === 'showing_results' || poll.status === 'lobby';
+    document.getElementById('pollDetailActions').style.display = isLive ? 'none' : 'flex';
+
+    const sidebar = document.getElementById('pollDetailSidebar');
+    if (isLive) {
+      sidebar.style.display = 'flex';
+      const qrEl = document.getElementById('detailSidebarQr');
+      qrEl.innerHTML = '';
+      const url = this._getJoinUrl(poll.code);
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(qrEl, { text: url, width: 120, height: 120, colorDark: '#0f0f0f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+      }
+      document.getElementById('detailSidebarCode').textContent = poll.code;
+      document.getElementById('detailSidebarUrl').textContent = url;
+    } else {
+      sidebar.style.display = 'none';
+    }
+
     this.showScreen('poll-detail');
   },
 
@@ -602,15 +621,16 @@ const App = {
     }
   },
 
-  async _nativeShare(code, title) {
+  _getWhatsAppUrl(code, title) {
     const url = this._getJoinUrl(code);
-    try {
-      await navigator.share({
-        title: `Join "${title}" on LivePoll`,
-        text: `Vote in the live poll: ${title}`,
-        url
-      });
-    } catch {}
+    const text = `Join my live poll "${title}" on LivePoll!\n${url}`;
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  },
+
+  _getTelegramUrl(code, title) {
+    const url = this._getJoinUrl(code);
+    const text = `Join my live poll "${title}" on LivePoll!`;
+    return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
   },
 
   _bindShare() {
@@ -619,10 +639,14 @@ const App = {
       this._copyLink(this.currentCode, document.getElementById('btnLobbyCopyLink'));
     };
 
-    const lobbyShareBtn = document.getElementById('btnLobbyShare');
-    if (navigator.share) lobbyShareBtn.style.display = 'inline-flex';
-    lobbyShareBtn.onclick = () => {
-      this._nativeShare(this.currentCode, this.pollData?.title || 'Untitled Poll');
+    document.getElementById('btnLobbyWhatsApp').onclick = () => {
+      const a = document.getElementById('btnLobbyWhatsApp');
+      a.href = this._getWhatsAppUrl(this.currentCode, this.pollData?.title || 'Untitled Poll');
+    };
+
+    document.getElementById('btnLobbyTelegram').onclick = () => {
+      const a = document.getElementById('btnLobbyTelegram');
+      a.href = this._getTelegramUrl(this.currentCode, this.pollData?.title || 'Untitled Poll');
     };
 
     // Host active sidebar copy button
@@ -635,10 +659,14 @@ const App = {
       this._copyLink(this._detailCode, document.getElementById('btnDetailCopyLink'));
     };
 
-    const detailShareBtn = document.getElementById('btnDetailShare');
-    if (navigator.share) detailShareBtn.style.display = 'inline-flex';
-    detailShareBtn.onclick = () => {
-      this._nativeShare(this._detailCode, this._detailTitle || 'Poll');
+    document.getElementById('btnDetailWhatsApp').onclick = () => {
+      const a = document.getElementById('btnDetailWhatsApp');
+      a.href = this._getWhatsAppUrl(this._detailCode, this._detailTitle || 'Poll');
+    };
+
+    document.getElementById('btnDetailTelegram').onclick = () => {
+      const a = document.getElementById('btnDetailTelegram');
+      a.href = this._getTelegramUrl(this._detailCode, this._detailTitle || 'Poll');
     };
   },
 

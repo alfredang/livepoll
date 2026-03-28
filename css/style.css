@@ -1019,12 +1019,33 @@ body {
 /* ══════════════════════════════════════════════
    POLL DETAIL (PAST RESULTS)
 ══════════════════════════════════════════════ */
+.poll-detail-with-sidebar {
+  display: flex; flex-direction: row;
+  min-height: 100vh;
+}
+
 .poll-detail-layout {
+  flex: 1;
   max-width: 700px;
   margin: 0 auto;
   width: 100%;
   padding: 32px 24px;
+  min-width: 0;
 }
+
+.poll-detail-sidebar {
+  width: 220px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px;
+  padding: 28px 20px;
+  border-left: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+
+.btn-whatsapp:hover { border-color: #25d366 !important; color: #25d366 !important; }
+.btn-telegram:hover { border-color: #26a5e4 !important; color: #26a5e4 !important; }
 
 .poll-detail-meta {
   display: flex; align-items: center;
@@ -1082,6 +1103,8 @@ body {
   .host-question-text { font-size: 1.5rem; }
   .host-controls { width: 100%; justify-content: flex-end; }
   .host-sidebar { display: none; }
+  .poll-detail-sidebar { display: none; }
+  .poll-detail-with-sidebar { flex-direction: column; }
   .poll-card-title { font-size: 1rem; }
   .poll-detail-layout, .dashboard-layout { padding: 24px 16px; }
 }
