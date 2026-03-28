@@ -416,6 +416,15 @@ const App = {
     document.getElementById('hostRoomCode').textContent = `Room: ${code}`;
     document.getElementById('hostVoteCount').textContent = '0';
 
+    // Render sidebar QR code and room code
+    const sidebarQr = document.getElementById('hostSidebarQr');
+    sidebarQr.innerHTML = '';
+    const url = this._getJoinUrl(code);
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(sidebarQr, { text: url, width: 120, height: 120, colorDark: '#0f0f0f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    }
+    document.getElementById('hostSidebarCode').textContent = code;
+
     const isLast = idx === total - 1;
     document.getElementById('btnHostNext').textContent = isLast ? 'End Poll' : 'Next →';
     document.getElementById('btnHostReveal').style.display = 'inline-flex';
@@ -608,6 +617,11 @@ const App = {
     if (navigator.share) lobbyShareBtn.style.display = 'inline-flex';
     lobbyShareBtn.onclick = () => {
       this._nativeShare(this.currentCode, this.pollData?.title || 'Untitled Poll');
+    };
+
+    // Host active sidebar copy button
+    document.getElementById('btnHostCopyLink').onclick = () => {
+      this._copyLink(this.currentCode, document.getElementById('btnHostCopyLink'));
     };
 
     // Poll detail share buttons

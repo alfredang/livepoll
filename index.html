@@ -217,13 +217,24 @@
           <button class="btn btn-primary btn-sm" id="btnHostNext">Next →</button>
         </div>
       </div>
-      <div class="host-question-body">
-        <h2 class="host-question-text" id="hostQuestionText">Question</h2>
-        <div class="vote-count-display">
-          <span id="hostVoteCount">0</span>
-          <span class="vote-label">votes</span>
+      <div class="host-body-with-sidebar">
+        <div class="host-question-body">
+          <h2 class="host-question-text" id="hostQuestionText">Question</h2>
+          <div class="vote-count-display">
+            <span id="hostVoteCount">0</span>
+            <span class="vote-label">votes</span>
+          </div>
+          <div id="hostChart" class="chart-container"></div>
         </div>
-        <div id="hostChart" class="chart-container"></div>
+        <div class="host-sidebar">
+          <div class="sidebar-label">Join at</div>
+          <div id="hostSidebarQr" class="sidebar-qr"></div>
+          <div class="sidebar-code" id="hostSidebarCode"></div>
+          <button class="btn btn-outline btn-sm" id="btnHostCopyLink">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy Link
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -324,11 +335,11 @@
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<script src="js/config.js?v=2"></script>
-<script src="js/sync.js?v=2"></script>
-<script src="js/poll.js?v=2"></script>
-<script src="js/charts.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/config.js?v=3"></script>
+<script src="js/sync.js?v=3"></script>
+<script src="js/poll.js?v=3"></script>
+<script src="js/charts.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 
 </body>
 </html>
