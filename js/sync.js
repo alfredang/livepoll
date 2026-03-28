@@ -20,10 +20,8 @@ const Sync = {
       // Generate fallback anonymous session ID
       this.sessionId = this.sessionId || ('u' + Math.random().toString(36).slice(2, 9));
 
-      // Process any pending redirect sign-in result
-      this.auth.getRedirectResult().catch(e => {
-        console.error('[Sync] redirect result error:', e);
-      });
+      // Process any pending redirect sign-in result (fallback)
+      this.auth.getRedirectResult().catch(() => {});
 
       // Create a one-time promise that resolves when auth state is first known
       this._authReadyPromise = new Promise(resolve => {
@@ -77,9 +75,16 @@ const Sync = {
   async signInWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-      await this.auth.signInWithRedirect(provider);
+      const result = await this.auth.signInWithPopup(provider);
+      return result.user;
     } catch (e) {
-      console.error('[Sync] Google sign-in failed:', e);
+      // Fallback: if popup blocked, try redirect
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+        console.warn('[Sync] Popup blocked, trying redirect...');
+        await this.auth.signInWithRedirect(provider);
+      } else {
+        console.error('[Sync] Google sign-in failed:', e);
+      }
       return null;
     }
   },

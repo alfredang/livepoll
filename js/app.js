@@ -429,6 +429,7 @@ const App = {
       new QRCode(sidebarQr, { text: url, width: 120, height: 120, colorDark: '#0f0f0f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
     }
     document.getElementById('hostSidebarCode').textContent = code;
+    document.getElementById('hostSidebarUrl').textContent = url;
 
     const isLast = idx === total - 1;
     document.getElementById('btnHostNext').textContent = isLast ? 'End Poll' : 'Next →';

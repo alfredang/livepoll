@@ -514,7 +514,8 @@ body {
 .host-body-with-sidebar {
   flex: 1;
   display: flex;
-  overflow: hidden;
+  flex-direction: row;
+  min-height: 0;
 }
 
 .host-question-body {
@@ -523,37 +524,46 @@ body {
   align-items: center; justify-content: center;
   padding: 40px 24px;
   gap: 24px;
+  min-width: 0;
 }
 
 .host-sidebar {
-  width: 200px;
+  width: 220px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 12px;
-  padding: 24px 16px;
+  gap: 14px;
+  padding: 28px 20px;
   border-left: 1px solid var(--border);
   background: var(--bg2);
   flex-shrink: 0;
 }
 
 .sidebar-label {
-  font-size: 0.75rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.8px;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
   color: var(--text-dim);
 }
 
 .sidebar-qr {
   background: white;
-  padding: 8px;
-  border-radius: 10px;
+  padding: 10px;
+  border-radius: 12px;
   display: inline-block;
 }
 
 .sidebar-code {
   font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: var(--lime);
-  letter-spacing: 4px;
+  letter-spacing: 5px;
+}
+
+.sidebar-url {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
 .host-question-text {
