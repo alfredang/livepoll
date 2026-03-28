@@ -33,6 +33,7 @@ const App = {
     this._bindJoin();
     this._bindAuth();
     this._bindDashboard();
+    this._bindShare();
     this._bindMisc();
   },
 
@@ -187,6 +188,8 @@ const App = {
   },
 
   _openPollDetail(poll) {
+    this._detailCode = poll.code;
+    this._detailTitle = poll.title;
     document.getElementById('pollDetailTitle').textContent = poll.title;
 
     const metaEl = document.getElementById('pollDetailMeta');
@@ -564,6 +567,63 @@ const App = {
   },
 
   // ── Misc ──────────────────────────────────────────────
+
+  // ── Share ───────────────────────────────────────────
+
+  _getJoinUrl(code) {
+    return `${location.origin}${location.pathname}?join=${code}`;
+  },
+
+  async _copyLink(code, btn) {
+    const url = this._getJoinUrl(code);
+    try {
+      await navigator.clipboard.writeText(url);
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      btn.classList.add('btn-copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('btn-copied'); }, 2000);
+    } catch {
+      prompt('Copy this link:', url);
+    }
+  },
+
+  async _nativeShare(code, title) {
+    const url = this._getJoinUrl(code);
+    try {
+      await navigator.share({
+        title: `Join "${title}" on LivePoll`,
+        text: `Vote in the live poll: ${title}`,
+        url
+      });
+    } catch {}
+  },
+
+  _bindShare() {
+    // Lobby share buttons
+    document.getElementById('btnLobbyCopyLink').onclick = () => {
+      this._copyLink(this.currentCode, document.getElementById('btnLobbyCopyLink'));
+    };
+
+    const lobbyShareBtn = document.getElementById('btnLobbyShare');
+    if (navigator.share) lobbyShareBtn.style.display = 'inline-flex';
+    lobbyShareBtn.onclick = () => {
+      this._nativeShare(this.currentCode, this.pollData?.title || 'Untitled Poll');
+    };
+
+    // Poll detail share buttons
+    document.getElementById('btnDetailCopyLink').onclick = () => {
+      this._copyLink(this._detailCode, document.getElementById('btnDetailCopyLink'));
+    };
+
+    const detailShareBtn = document.getElementById('btnDetailShare');
+    if (navigator.share) detailShareBtn.style.display = 'inline-flex';
+    detailShareBtn.onclick = () => {
+      this._nativeShare(this._detailCode, this._detailTitle || 'Poll');
+    };
+  },
+
+  _detailCode: null,
+  _detailTitle: null,
 
   _bindMisc() {
     document.getElementById('btnEndedHome').onclick = () => {
