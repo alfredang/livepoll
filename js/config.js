@@ -1,5 +1,5 @@
 const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyBTa8JOrKV44rnInOQqVpAddDNHjDnD8Mw",
+  apiKey:            "FIREBASE_API_KEY_PLACEHOLDER",
   authDomain:        "livepoll-app.firebaseapp.com",
   databaseURL:       "https://livepoll-app-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId:         "livepoll-app",

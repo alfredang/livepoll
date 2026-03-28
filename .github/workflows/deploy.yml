@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Inject Firebase API key
+        run: sed -i 's|FIREBASE_API_KEY_PLACEHOLDER|'"${{ secrets.FIREBASE_API_KEY }}"'|' js/config.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
