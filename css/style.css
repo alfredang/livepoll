@@ -954,8 +954,14 @@ body {
 .poll-detail-meta {
   display: flex; align-items: center;
   gap: 6px; font-size: 0.85rem;
-  color: var(--text-dim); margin-bottom: 32px;
+  color: var(--text-dim); margin-bottom: 16px;
 }
+
+.poll-detail-actions {
+  display: flex; gap: 10px; margin-bottom: 12px;
+}
+
+.poll-detail-actions .btn svg { flex-shrink: 0; }
 
 .poll-detail-questions {
   display: flex;

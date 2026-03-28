@@ -120,6 +120,10 @@ const App = {
     document.getElementById('btnBackFromPollDetail').onclick = () => {
       this._openDashboard();
     };
+
+    document.getElementById('btnDuplicatePoll').onclick = () => {
+      this._duplicatePoll(this._detailPoll);
+    };
   },
 
   async _openDashboard() {
@@ -190,6 +194,7 @@ const App = {
   _openPollDetail(poll) {
     this._detailCode = poll.code;
     this._detailTitle = poll.title;
+    this._detailPoll = poll;
     document.getElementById('pollDetailTitle').textContent = poll.title;
 
     const metaEl = document.getElementById('pollDetailMeta');
@@ -638,6 +643,56 @@ const App = {
 
   _detailCode: null,
   _detailTitle: null,
+  _detailPoll: null,
+
+  _duplicatePoll(poll) {
+    if (!poll || !poll.questions) return;
+
+    // Clear the create form
+    const list = document.getElementById('questionsList');
+    list.innerHTML = '';
+    document.getElementById('pollTitle').value = poll.title || '';
+
+    // Populate questions from the source poll
+    poll.questions.forEach((q, i) => {
+      const idx = i + 1;
+      const card = document.createElement('div');
+      card.className = 'question-card';
+      card.dataset.idx = idx;
+      card.innerHTML = `
+        <div class="question-card-header">
+          <span class="question-number">Question ${idx}</span>
+          <button class="btn-remove-q" title="Remove">×</button>
+        </div>
+        <div class="form-section">
+          <input type="text" class="input-field q-text" placeholder="Ask a question…" maxlength="200" value="${this._escapeAttr(q.text)}">
+        </div>
+        <div class="options-list"></div>
+        <button class="btn-add-option">+ Add option</button>
+      `;
+
+      card.querySelector('.btn-remove-q').onclick = () => {
+        card.remove();
+        this._renumberQuestions();
+      };
+      card.querySelector('.btn-add-option').onclick = () => {
+        this._addOption(card.querySelector('.options-list'));
+      };
+
+      // Add existing options
+      q.options.forEach(opt => {
+        this._addOption(card.querySelector('.options-list'), opt);
+      });
+
+      list.appendChild(card);
+    });
+
+    this.showScreen('create');
+  },
+
+  _escapeAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  },
 
   _bindMisc() {
     document.getElementById('btnEndedHome').onclick = () => {
