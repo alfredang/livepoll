@@ -1,3 +1,18 @@
+/* ── Powered-by footer ────────────────────────────── */
+.powered-by {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  color: #666;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  z-index: 10;
+}
+
 /* ── Variables ─────────────────────────────────────── */
 :root {
   --bg:       #0f0f0f;
