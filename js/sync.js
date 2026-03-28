@@ -20,6 +20,11 @@ const Sync = {
       // Generate fallback anonymous session ID
       this.sessionId = this.sessionId || ('u' + Math.random().toString(36).slice(2, 9));
 
+      // Process any pending redirect sign-in result
+      this.auth.getRedirectResult().catch(e => {
+        console.error('[Sync] redirect result error:', e);
+      });
+
       // Create a one-time promise that resolves when auth state is first known
       this._authReadyPromise = new Promise(resolve => {
         this.auth.onAuthStateChanged(user => {
