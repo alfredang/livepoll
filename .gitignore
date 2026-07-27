@@ -1,0 +1,20 @@
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Distribution archives (rebuildable — never pushed to GitHub)
+*.zip
+
+# Source material the project was derived from — not ours to republish.
+**/reference/
+
+# Playwright MCP scratch output
+.playwright-mcp/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

@@ -17,7 +17,8 @@ const Poll = {
         id: Poll.genId(),
         index: i,
         text: q.text,
-        options: q.options
+        options: q.options,
+        multi: !!q.multi        // allow selecting more than one option
       })),
       participants: {},
       responses: {},
@@ -68,15 +69,25 @@ const Poll = {
     ref.onDisconnect().remove();
   },
 
+  // An answer is a string (single choice) or an array of strings (multi choice).
   tallyVotes(responses, options) {
     const counts = {};
     options.forEach(o => counts[o] = 0);
     if (responses) {
       Object.values(responses).forEach(ans => {
-        if (counts[ans] !== undefined) counts[ans]++;
+        const picks = Array.isArray(ans) ? ans : [ans];
+        picks.forEach(p => {
+          if (counts[p] !== undefined) counts[p]++;
+        });
       });
     }
     return counts;
+  },
+
+  // Number of people who answered. With multi-select the sum of the tallied
+  // counts exceeds this, so percentages must be based on respondents.
+  countRespondents(responses) {
+    return responses ? Object.keys(responses).length : 0;
   },
 
   async getUserPolls(uid) {

@@ -357,12 +357,38 @@ body {
 }
 
 .question-card-header {
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; align-items: center; gap: 10px;
 }
 .question-number {
   font-size: 0.78rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.8px;
   color: var(--lime);
+  margin-right: auto;
+}
+
+/* Multiple-answer toggle */
+.multi-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; color: var(--text-dim);
+  cursor: pointer; user-select: none;
+  padding: 4px 8px; border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+.multi-toggle:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.multi-toggle input { accent-color: var(--lime); cursor: pointer; }
+.multi-toggle:has(input:checked) { color: var(--lime); }
+
+.multi-badge {
+  display: inline-block;
+  font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--lime);
+  background: rgba(200,255,87,0.12);
+  border: 1px solid rgba(200,255,87,0.3);
+  padding: 3px 9px; border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 .btn-remove-q {
   background: none; border: none;
@@ -375,6 +401,33 @@ body {
 .options-list { display: flex; flex-direction: column; gap: 8px; }
 
 .option-row { display: flex; gap: 8px; align-items: center; }
+
+/* ── Drag & drop reordering ─────────────────────────── */
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px 2px;
+  user-select: none;
+  transition: color 0.2s;
+  touch-action: none;
+}
+.drag-handle:hover { color: var(--lime); }
+.drag-handle:active { cursor: grabbing; }
+
+.question-card.dragging,
+.option-row.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+.question-card.dragging { border-color: var(--lime); }
+
+/* Dashed placeholder feel while a list is being reordered */
+.questions-list.drag-active .question-card:not(.dragging),
+.options-list.drag-active .option-row:not(.dragging) {
+  transition: transform 0.15s ease;
+}
 
 .option-input {
   flex: 1;
@@ -730,6 +783,44 @@ body {
 .vote-option:hover { border-color: var(--lime); background: rgba(200,255,87,0.05); transform: translateX(4px); }
 .vote-option.selected { border-color: var(--lime); background: rgba(200,255,87,0.12); color: var(--lime); }
 .vote-option:disabled { cursor: default; transform: none; }
+.vote-option:disabled:hover { border-color: var(--border); background: var(--bg2); transform: none; }
+.vote-option.selected:disabled:hover { border-color: var(--lime); background: rgba(200,255,87,0.12); }
+
+/* Multi-select options carry a checkbox affordance */
+.vote-hint {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: -4px;
+}
+
+.vote-option-multi { display: flex; align-items: center; gap: 14px; }
+
+.vote-check {
+  flex: 0 0 auto;
+  width: 22px; height: 22px;
+  border: 2px solid var(--text-muted);
+  border-radius: 6px;
+  position: relative;
+  transition: all 0.2s;
+}
+.vote-option-multi:hover .vote-check { border-color: var(--lime); }
+.vote-option-multi.selected .vote-check {
+  background: var(--lime);
+  border-color: var(--lime);
+}
+.vote-option-multi.selected .vote-check::after {
+  content: '';
+  position: absolute;
+  left: 6px; top: 2px;
+  width: 5px; height: 10px;
+  border: solid var(--bg);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+.vote-option-multi .vote-option-text { flex: 1; }
+
+.btn-vote-submit { margin-top: 20px; }
+.btn-vote-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ══════════════════════════════════════════════
    VOTED SCREEN
@@ -1116,6 +1207,8 @@ body {
   .hero-title { font-size: 2.4rem; }
   .host-header { flex-wrap: wrap; }
   .host-question-text { font-size: 1.5rem; }
+  .question-card-header { flex-wrap: wrap; row-gap: 6px; }
+  .multi-toggle { font-size: 0.72rem; padding: 4px 6px; }
   .host-controls { width: 100%; justify-content: flex-end; }
   .host-sidebar { display: none; }
   .poll-detail-sidebar { display: none; }

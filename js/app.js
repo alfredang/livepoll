@@ -219,10 +219,13 @@ const App = {
 
       const responses = poll.responses ? poll.responses[q.id] : null;
       const counts = Poll.tallyVotes(responses, q.options);
-      const totalQ = Object.values(counts).reduce((a, b) => a + b, 0);
+      const totalQ = Poll.countRespondents(responses);
 
       block.innerHTML = `
-        <div class="detail-question-label">Question ${i + 1}</div>
+        <div class="detail-question-label">
+          Question ${i + 1}
+          ${q.multi ? '<span class="multi-badge">Multiple answers</span>' : ''}
+        </div>
         <h3 class="detail-question-text">${this._escapeHtml(q.text)}</h3>
         <div class="detail-chart chart-container"></div>
         <div class="detail-vote-count">${totalQ} vote${totalQ !== 1 ? 's' : ''}</div>
@@ -289,19 +292,31 @@ const App = {
 
     document.getElementById('btnLaunchPoll').onclick = () => this.launchPoll();
 
+    this._makeSortable(
+      document.getElementById('questionsList'),
+      '.question-card',
+      () => this._renumberQuestions()
+    );
+
     // Start with one question
     this._addQuestion();
   },
 
-  _addQuestion() {
+  _addQuestion(data = null) {
     const list = document.getElementById('questionsList');
     const idx  = list.children.length + 1;
     const card = document.createElement('div');
     card.className = 'question-card';
+    card.draggable = true;
     card.dataset.idx = idx;
     card.innerHTML = `
       <div class="question-card-header">
+        <span class="drag-handle q-drag-handle" title="Drag to reorder">⠿</span>
         <span class="question-number">Question ${idx}</span>
+        <label class="multi-toggle" title="Let people pick more than one option">
+          <input type="checkbox" class="q-multi">
+          <span>Multiple answers</span>
+        </label>
         <button class="btn-remove-q" title="Remove">×</button>
       </div>
       <div class="form-section">
@@ -310,6 +325,11 @@ const App = {
       <div class="options-list"></div>
       <button class="btn-add-option">+ Add option</button>
     `;
+
+    if (data) {
+      card.querySelector('.q-text').value = data.text || '';
+      card.querySelector('.q-multi').checked = !!data.multi;
+    }
 
     card.querySelector('.btn-remove-q').onclick = () => {
       card.remove();
@@ -320,20 +340,28 @@ const App = {
       this._addOption(card.querySelector('.options-list'));
     };
 
-    // Add 2 default options
-    this._addOption(card.querySelector('.options-list'), 'Option A');
-    this._addOption(card.querySelector('.options-list'), 'Option B');
+    const optList = card.querySelector('.options-list');
+    if (data && data.options && data.options.length) {
+      data.options.forEach(opt => this._addOption(optList, opt));
+    } else {
+      this._addOption(optList, 'Option A');
+      this._addOption(optList, 'Option B');
+    }
 
+    this._makeOptionsSortable(optList);
     list.appendChild(card);
   },
 
   _addOption(list, val = '') {
     const row = document.createElement('div');
     row.className = 'option-row';
+    row.draggable = true;
     row.innerHTML = `
-      <input type="text" class="option-input" placeholder="Option…" value="${val}" maxlength="100">
+      <span class="drag-handle opt-drag-handle" title="Drag to reorder">⠿</span>
+      <input type="text" class="option-input" placeholder="Option…" maxlength="100">
       <button class="btn-remove-opt" title="Remove">×</button>
     `;
+    row.querySelector('.option-input').value = val;
     row.querySelector('.btn-remove-opt').onclick = () => row.remove();
     list.appendChild(row);
   },
@@ -344,6 +372,62 @@ const App = {
     });
   },
 
+  // ── Drag & Drop Reordering ───────────────────────────
+  //
+  // Both lists share one mechanism: on dragover we find the sibling whose
+  // vertical midpoint is below the cursor and insert the dragged element
+  // before it, so the list reflows live under the pointer.
+
+  _elementAfterPoint(container, selector, y) {
+    const items = [...container.querySelectorAll(`:scope > ${selector}:not(.dragging)`)];
+    return items.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) return { offset, element: child };
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+  },
+
+  _makeSortable(container, selector, onDrop) {
+    if (!container || container.dataset.sortable === '1') return;
+    container.dataset.sortable = '1';
+
+    container.addEventListener('dragstart', e => {
+      const item = e.target.closest(selector);
+      if (!item || !container.contains(item)) return;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      // Firefox requires data to be set for the drag to start at all.
+      e.dataTransfer.setData('text/plain', '');
+    });
+
+    container.addEventListener('dragend', e => {
+      const item = e.target.closest(selector);
+      if (item) item.classList.remove('dragging');
+      container.classList.remove('drag-active');
+      if (onDrop) onDrop();
+    });
+
+    container.addEventListener('dragover', e => {
+      const dragging = container.querySelector(`:scope > ${selector}.dragging`);
+      if (!dragging) return;   // ignore drags originating in another list
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      container.classList.add('drag-active');
+      const after = this._elementAfterPoint(container, selector, e.clientY);
+      if (after === null) container.appendChild(dragging);
+      else container.insertBefore(dragging, after);
+    });
+
+    container.addEventListener('drop', e => {
+      if (container.querySelector(`:scope > ${selector}.dragging`)) e.preventDefault();
+    });
+  },
+
+  _makeOptionsSortable(optList) {
+    this._makeSortable(optList, '.option-row');
+  },
+
   _collectQuestions() {
     const cards = document.querySelectorAll('.question-card');
     const questions = [];
@@ -351,9 +435,14 @@ const App = {
       const text = card.querySelector('.q-text').value.trim();
       const options = [...card.querySelectorAll('.option-input')]
         .map(i => i.value.trim()).filter(Boolean);
+      const multi = card.querySelector('.q-multi').checked;
       if (!text) { alert('Please fill in all question texts.'); return null; }
       if (options.length < 2) { alert('Each question needs at least 2 options.'); return null; }
-      questions.push({ text, options });
+      if (new Set(options).size !== options.length) {
+        alert(`"${text}" has duplicate options. Each option must be unique.`);
+        return null;
+      }
+      questions.push({ text, options, multi });
     }
     if (!questions.length) { alert('Add at least one question.'); return null; }
     return questions;
@@ -437,6 +526,7 @@ const App = {
 
     document.getElementById('hostProgress').textContent = `Q${idx + 1} of ${total}`;
     document.getElementById('hostQuestionText').textContent = q.text;
+    document.getElementById('hostMultiBadge').style.display = q.multi ? 'inline-block' : 'none';
     document.getElementById('hostRoomCode').textContent = `Room: ${code}`;
     document.getElementById('hostVoteCount').textContent = '0';
 
@@ -461,9 +551,10 @@ const App = {
     // Live vote tally
     const off = Sync.on(`polls/${code}/responses/${q.id}`, data => {
       const counts = Poll.tallyVotes(data, q.options);
-      const total  = Object.values(counts).reduce((a, b) => a + b, 0);
-      document.getElementById('hostVoteCount').textContent = total;
-      Charts.render(document.getElementById('hostChart'), q.options, counts, total || 1);
+      // Percentages are per-respondent, so multi-select bars can total >100%.
+      const voters = Poll.countRespondents(data);
+      document.getElementById('hostVoteCount').textContent = voters;
+      Charts.render(document.getElementById('hostChart'), q.options, counts, voters || 1);
     });
     this.listeners.push(off);
 
@@ -561,29 +652,81 @@ const App = {
     const container = document.getElementById('voteOptions');
     container.innerHTML = '';
 
-    q.options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'vote-option';
-      btn.textContent = opt;
-      btn.onclick = async () => {
-        if (this.myAnswer) return;
-        this.myAnswer = opt;
-        container.querySelectorAll('.vote-option').forEach(b => {
-          b.classList.toggle('selected', b.textContent === opt);
-          b.disabled = true;
-        });
-        await Poll.submitVote(this.currentCode, q.id, opt);
+    const submitBtn = document.getElementById('btnVoteSubmit');
+    const hint      = document.getElementById('voteHint');
+
+    if (q.multi) {
+      // Multi-select: toggle freely, then confirm with the Submit button.
+      const picked = new Set();
+
+      hint.textContent = 'Select all that apply';
+      hint.style.display = 'block';
+      submitBtn.style.display = 'inline-flex';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submit';
+
+      const syncSubmit = () => {
+        submitBtn.disabled = picked.size === 0;
+        submitBtn.textContent = picked.size ? `Submit (${picked.size})` : 'Submit';
+      };
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'vote-option vote-option-multi';
+        btn.innerHTML = `<span class="vote-check" aria-hidden="true"></span><span class="vote-option-text"></span>`;
+        btn.querySelector('.vote-option-text').textContent = opt;
+        btn.setAttribute('aria-pressed', 'false');
+        btn.onclick = () => {
+          if (this.myAnswer) return;          // already submitted
+          if (picked.has(opt)) picked.delete(opt);
+          else picked.add(opt);
+          btn.classList.toggle('selected', picked.has(opt));
+          btn.setAttribute('aria-pressed', picked.has(opt) ? 'true' : 'false');
+          syncSubmit();
+        };
+        container.appendChild(btn);
+      });
+
+      submitBtn.onclick = async () => {
+        if (this.myAnswer || picked.size === 0) return;
+        // Preserve the question's option order rather than click order.
+        const answer = q.options.filter(o => picked.has(o));
+        this.myAnswer = answer;
+        submitBtn.disabled = true;
+        container.querySelectorAll('.vote-option').forEach(b => b.disabled = true);
+        await Poll.submitVote(this.currentCode, q.id, answer);
         setTimeout(() => this.showScreen('voted'), 400);
       };
-      container.appendChild(btn);
-    });
+    } else {
+      // Single choice: tapping an option submits immediately.
+      hint.style.display = 'none';
+      submitBtn.style.display = 'none';
+      submitBtn.onclick = null;
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'vote-option';
+        btn.textContent = opt;
+        btn.onclick = async () => {
+          if (this.myAnswer) return;
+          this.myAnswer = opt;
+          container.querySelectorAll('.vote-option').forEach(b => {
+            b.classList.toggle('selected', b === btn);
+            b.disabled = true;
+          });
+          await Poll.submitVote(this.currentCode, q.id, opt);
+          setTimeout(() => this.showScreen('voted'), 400);
+        };
+        container.appendChild(btn);
+      });
+    }
 
     this.showScreen('vote');
   },
 
   _showParticipantResults(q, responses) {
     const counts = Poll.tallyVotes(responses, q.options);
-    const total  = Object.values(counts).reduce((a, b) => a + b, 0);
+    const total  = Poll.countRespondents(responses);
 
     document.getElementById('pResultsQuestion').textContent = q.text;
 
@@ -683,44 +826,9 @@ const App = {
     document.getElementById('pollTitle').value = poll.title || '';
 
     // Populate questions from the source poll
-    poll.questions.forEach((q, i) => {
-      const idx = i + 1;
-      const card = document.createElement('div');
-      card.className = 'question-card';
-      card.dataset.idx = idx;
-      card.innerHTML = `
-        <div class="question-card-header">
-          <span class="question-number">Question ${idx}</span>
-          <button class="btn-remove-q" title="Remove">×</button>
-        </div>
-        <div class="form-section">
-          <input type="text" class="input-field q-text" placeholder="Ask a question…" maxlength="200" value="${this._escapeAttr(q.text)}">
-        </div>
-        <div class="options-list"></div>
-        <button class="btn-add-option">+ Add option</button>
-      `;
-
-      card.querySelector('.btn-remove-q').onclick = () => {
-        card.remove();
-        this._renumberQuestions();
-      };
-      card.querySelector('.btn-add-option').onclick = () => {
-        this._addOption(card.querySelector('.options-list'));
-      };
-
-      // Add existing options
-      q.options.forEach(opt => {
-        this._addOption(card.querySelector('.options-list'), opt);
-      });
-
-      list.appendChild(card);
-    });
+    poll.questions.forEach(q => this._addQuestion(q));
 
     this.showScreen('create');
-  },
-
-  _escapeAttr(str) {
-    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
 
   _bindMisc() {

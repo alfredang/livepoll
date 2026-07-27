@@ -245,6 +245,7 @@
       <div class="host-body-with-sidebar">
         <div class="host-question-body">
           <h2 class="host-question-text" id="hostQuestionText">Question</h2>
+          <div class="multi-badge" id="hostMultiBadge" style="display:none;">Multiple answers</div>
           <div class="vote-count-display">
             <span id="hostVoteCount">0</span>
             <span class="vote-label">votes</span>
@@ -312,7 +313,9 @@
       </div>
       <div class="vote-body">
         <h2 class="vote-question" id="voteQuestionText">Question</h2>
+        <p class="vote-hint" id="voteHint" style="display:none;">Select all that apply</p>
         <div id="voteOptions" class="vote-options"></div>
+        <button class="btn btn-primary btn-full btn-vote-submit" id="btnVoteSubmit" style="display:none;" disabled>Submit</button>
       </div>
     </div>
   </div>

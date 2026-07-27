@@ -46,6 +46,8 @@
 | 🎨 **Bold Design** | Editorial dark theme with electric lime accent |
 | 🔗 **URL Join** | Share a direct link `?join=123456` |
 | 🧭 **Multi-Question** | Create polls with multiple questions |
+| ↕️ **Drag to Reorder** | Reorder questions and options by dragging their handles |
+| ☑️ **Multiple Answers** | Per-question setting — let voters pick more than one option |
 | 👥 **Live Presence** | See participant count in real-time |
 | ✅ **Answer Highlight** | Your choice highlighted in results |
 | 🔐 **Google Sign-In** | Optional login to save polls to your account |
@@ -58,15 +60,20 @@
 ### As a Host
 1. Click **"Create a Poll"**
 2. Enter your poll title and add questions with options
-3. Click **"Launch Poll"** — get a room code + QR
-4. Share the code with your audience
-5. Click **"Start Poll"** when ready
-6. Click **"Show Results"** to reveal votes, **"Next →"** for the next question
+3. Drag the **⠿** handle on a question card to reorder questions, or the handle on an option row to reorder that question's options
+4. Tick **"Multiple answers"** on any question to let voters select more than one option
+5. Click **"Launch Poll"** — get a room code + QR
+6. Share the code with your audience
+7. Click **"Start Poll"** when ready
+8. Click **"Show Results"** to reveal votes, **"Next →"** for the next question
 
 ### As a Participant
 1. Go to the live URL or enter the room code
 2. Wait for the host to start
 3. Tap your answer — see live results after the host reveals them
+4. On a **multiple-answer** question, tap every option that applies, then press **Submit**
+
+> On multiple-answer questions each bar shows the share of **voters** who picked that option, so the percentages can add up to more than 100%.
 
 ---
 
