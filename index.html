@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900&family=DM+Serif+Text:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -233,17 +233,19 @@
     <div class="host-layout">
       <div class="host-header">
         <div class="host-meta">
-          <span class="live-badge">🔴 LIVE</span>
+          <span id="hostStatusBadge" class="live-badge">🔴 LIVE</span>
           <span id="hostRoomCode" class="host-code"></span>
         </div>
         <div class="host-progress" id="hostProgress">Q1 of 1</div>
         <div class="host-controls">
+          <button class="btn btn-outline btn-sm" id="btnHostCopyResults">Copy results link</button>
           <button class="btn btn-outline btn-sm" id="btnHostReveal">Show Results</button>
           <button class="btn btn-primary btn-sm" id="btnHostNext">Next →</button>
         </div>
       </div>
       <div class="host-body-with-sidebar">
         <div class="host-question-body">
+          <p id="hostResultsStatus" class="host-results-status" role="status"></p>
           <h2 class="host-question-text" id="hostQuestionText">Question</h2>
           <div class="multi-badge" id="hostMultiBadge" style="display:none;">Multiple answers</div>
           <div class="vote-count-display">
@@ -367,10 +369,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script src="js/config.js?v=7"></script>
-<script src="js/sync.js?v=7"></script>
+<script src="js/sync.js?v=8"></script>
 <script src="js/poll.js?v=7"></script>
-<script src="js/charts.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/charts.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 
 </body>
 </html>

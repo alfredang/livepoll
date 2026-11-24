@@ -581,6 +581,19 @@ body {
 .host-progress { font-size: 0.9rem; color: var(--text-dim); font-weight: 500; flex: 1; text-align: center; }
 .host-controls { display: flex; gap: 10px; }
 
+#screen-host-active[data-results] .host-controls,
+#screen-host-active[data-results-ended="true"] .host-sidebar,
+#screen-host-active[data-results-ended="true"] .host-progress,
+#screen-host-active[data-results-unavailable] .host-sidebar,
+#screen-host-active[data-results-unavailable] .host-progress,
+#screen-host-active[data-results-unavailable] .host-question-text,
+#screen-host-active[data-results-unavailable] .multi-badge,
+#screen-host-active[data-results-unavailable] .vote-count-display,
+#screen-host-active[data-results-unavailable] #hostChart,
+.host-results-status:empty { display: none; }
+
+.host-results-status { color: var(--text-dim); text-align: center; }
+
 .host-body-with-sidebar {
   flex: 1;
   display: flex;

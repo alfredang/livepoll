@@ -58,10 +58,11 @@ const Sync = {
 
   async update(path, data) { await this.ref(path).update(data); },
 
-  on(path, cb) {
+  on(path, cb, onError) {
     const r = this.ref(path);
-    if (r) r.on('value', snap => cb(snap.exists() ? snap.val() : null));
-    return () => r && r.off();
+    const listener = snap => cb(snap.exists() ? snap.val() : null);
+    if (r) r.on('value', listener, onError);
+    return () => r && r.off('value', listener);
   },
 
   offAll(path) { const r = this.ref(path); if (r) r.off(); },

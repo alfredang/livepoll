@@ -19,7 +19,7 @@ const Charts = {
       row.className = 'chart-bar-row';
       row.innerHTML = `
         <div class="chart-label">
-          <span>${opt}</span>
+          <span></span>
           <span class="chart-label-pct">${pct}%</span>
         </div>
         <div class="chart-track">
@@ -29,6 +29,7 @@ const Charts = {
           </div>
         </div>
       `;
+      row.querySelector('.chart-label span').textContent = opt;
       container.appendChild(row);
     });
   }

@@ -67,6 +67,8 @@
 7. Click **"Start Poll"** when ready
 8. Click **"Show Results"** to reveal votes, **"Next →"** for the next question
 
+Use **Copy results link** during a poll to open the live chart in a browser or on a projector. Anyone with the link can view aggregate results as votes arrive, including before you reveal results on the voting screen. The voting QR still opens the participant view. After the poll ends, the results link shows the final question.
+
 ### As a Participant
 1. Go to the live URL or enter the room code
 2. Wait for the host to start

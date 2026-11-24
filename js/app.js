@@ -17,10 +17,13 @@ const App = {
 
     Sync.onAuth(user => this._onAuthStateChanged(user));
 
-    // Check URL for ?join=CODE
+    // A results link is a display only. Joining remains a separate action.
     const params = new URLSearchParams(window.location.search);
+    const resultsCode = params.get('results');
     const code = params.get('join');
-    if (code) {
+    if (resultsCode !== null) {
+      this.openResultsDisplay(resultsCode);
+    } else if (code) {
       window.history.replaceState({}, '', window.location.pathname);
       setTimeout(() => this.startJoin(code), 200);
     } else {
@@ -524,21 +527,9 @@ const App = {
     const code = this.currentCode;
     const total = this.pollData.questions.length;
 
-    document.getElementById('hostProgress').textContent = `Q${idx + 1} of ${total}`;
-    document.getElementById('hostQuestionText').textContent = q.text;
-    document.getElementById('hostMultiBadge').style.display = q.multi ? 'inline-block' : 'none';
-    document.getElementById('hostRoomCode').textContent = `Room: ${code}`;
+    this._paintHostQuestion(q, idx, total);
+    this._paintHostJoinSidebar(code);
     document.getElementById('hostVoteCount').textContent = '0';
-
-    // Render sidebar QR code and room code
-    const sidebarQr = document.getElementById('hostSidebarQr');
-    sidebarQr.innerHTML = '';
-    const url = this._getJoinUrl(code);
-    if (typeof QRCode !== 'undefined') {
-      new QRCode(sidebarQr, { text: url, width: 120, height: 120, colorDark: '#0f0f0f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-    }
-    document.getElementById('hostSidebarCode').textContent = code;
-    document.getElementById('hostSidebarUrl').textContent = url;
 
     const isLast = idx === total - 1;
     document.getElementById('btnHostNext').textContent = isLast ? 'End Poll' : 'Next →';
@@ -549,16 +540,78 @@ const App = {
     this.listeners = [];
 
     // Live vote tally
-    const off = Sync.on(`polls/${code}/responses/${q.id}`, data => {
-      const counts = Poll.tallyVotes(data, q.options);
-      // Percentages are per-respondent, so multi-select bars can total >100%.
-      const voters = Poll.countRespondents(data);
-      document.getElementById('hostVoteCount').textContent = voters;
-      Charts.render(document.getElementById('hostChart'), q.options, counts, voters || 1);
-    });
+    const off = Sync.on(`polls/${code}/responses/${q.id}`, data => this._paintHostTally(q, data));
     this.listeners.push(off);
 
     this.showScreen('host-active');
+  },
+
+  _paintHostQuestion(q, idx, total) {
+    document.getElementById('hostProgress').textContent = `Q${idx + 1} of ${total}`;
+    document.getElementById('hostQuestionText').textContent = q.text;
+    document.getElementById('hostMultiBadge').style.display = q.multi ? 'inline-block' : 'none';
+  },
+
+  _paintHostJoinSidebar(code) {
+    document.getElementById('hostRoomCode').textContent = `Room: ${code}`;
+    const sidebarQr = document.getElementById('hostSidebarQr');
+    sidebarQr.innerHTML = '';
+    const url = this._getJoinUrl(code);
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(sidebarQr, { text: url, width: 120, height: 120, colorDark: '#0f0f0f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    }
+    document.getElementById('hostSidebarCode').textContent = code;
+    document.getElementById('hostSidebarUrl').textContent = url;
+  },
+
+  _paintHostTally(q, responses) {
+    const counts = Poll.tallyVotes(responses, q.options);
+    // Percentages are per respondent, including on multi-select questions.
+    const voters = Poll.countRespondents(responses);
+    document.getElementById('hostVoteCount').textContent = voters;
+    Charts.render(document.getElementById('hostChart'), q.options, counts, voters || 1);
+  },
+
+  openResultsDisplay(code) {
+    const screen = document.getElementById('screen-host-active');
+    const badge = document.getElementById('hostStatusBadge');
+    const status = document.getElementById('hostResultsStatus');
+    this.currentCode = code;
+    screen.dataset.results = 'true';
+    badge.textContent = 'RESULTS';
+    this.showScreen('host-active');
+
+    const showUnavailable = message => {
+      screen.dataset.resultsUnavailable = 'true';
+      status.textContent = message;
+    };
+    if (!/^\d{6}$/.test(code)) {
+      showUnavailable('Enter a valid six-digit room code in the results link.');
+      return;
+    }
+    if (!Sync.db) {
+      showUnavailable('Could not connect to LivePoll. Reload this page to try again.');
+      return;
+    }
+    showUnavailable('Loading results…');
+    this._paintHostJoinSidebar(code);
+
+    const off = Sync.on(`polls/${code}`, poll => {
+      const idx = poll?.currentQuestion ?? 0;
+      const q = poll?.questions?.[idx];
+      if (!q || !Array.isArray(q.options)) {
+        showUnavailable('Poll not found. Check the room code.');
+        return;
+      }
+      delete screen.dataset.resultsUnavailable;
+      const ended = poll.status === 'ended';
+      screen.dataset.resultsEnded = String(ended);
+      badge.textContent = ended ? 'FINAL RESULTS' : 'LIVE RESULTS';
+      status.textContent = poll.status === 'lobby' ? 'Waiting for the host to start…' : '';
+      this._paintHostQuestion(q, idx, poll.questions.length);
+      this._paintHostTally(q, poll.responses?.[q.id]);
+    }, () => showUnavailable('Could not load results. Reload this page to try again.'));
+    this.listeners.push(off);
   },
 
   // ── JOIN (Participant) ────────────────────────────────
@@ -751,8 +804,7 @@ const App = {
     return `${location.origin}${location.pathname}?join=${code}`;
   },
 
-  async _copyLink(code, btn) {
-    const url = this._getJoinUrl(code);
+  async _copyLink(code, btn, url = this._getJoinUrl(code)) {
     try {
       await navigator.clipboard.writeText(url);
       const orig = btn.innerHTML;
@@ -795,6 +847,11 @@ const App = {
     // Host active sidebar copy button
     document.getElementById('btnHostCopyLink').onclick = () => {
       this._copyLink(this.currentCode, document.getElementById('btnHostCopyLink'));
+    };
+
+    document.getElementById('btnHostCopyResults').onclick = (event) => {
+      const url = `${location.origin}${location.pathname}?results=${this.currentCode}`;
+      this._copyLink(this.currentCode, event.currentTarget, url);
     };
 
     // Poll detail share buttons
