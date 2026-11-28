@@ -849,6 +849,28 @@ const App = {
       this._copyLink(this.currentCode, document.getElementById('btnHostCopyLink'));
     };
 
+    document.getElementById('btnResetVotes').onclick = async (event) => {
+      const btn = event.currentTarget;
+      const code = this.currentCode;
+      if (!code) return;
+      const poll = await Poll.get(code);
+      const votes = poll ? Poll._countTotalVotes(poll) : 0;
+      const ok = confirm(`Reset poll ${code}?\n\nThis clears ${votes === 1 ? 'the 1 vote' : `all ${votes} votes`} so the room starts at zero. ` +
+                         'The room code, QR code and questions stay the same. This cannot be undone.');
+      if (!ok) return;
+      const label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Resetting…';
+      try {
+        await Poll.resetVotes(code);
+        btn.textContent = 'Poll reset ✓';
+      } catch (err) {
+        console.error(err);
+        btn.textContent = 'Reset failed';
+      }
+      setTimeout(() => { btn.textContent = label; btn.disabled = false; }, 2000);
+    };
+
     document.getElementById('btnHostCopyResults').onclick = (event) => {
       const url = `${location.origin}${location.pathname}?results=${this.currentCode}`;
       this._copyLink(this.currentCode, event.currentTarget, url);

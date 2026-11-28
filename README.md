@@ -69,6 +69,8 @@
 
 Use **Copy results link** during a poll to open the live chart in a browser or on a projector. Anyone with the link can view aggregate results as votes arrive, including before you reveal results on the voting screen. The voting QR still opens the participant view. After the poll ends, the results link shows the final question.
 
+Use **↺ Reset poll** (top right of the host screen and the results link) to clear every vote before the next class. It asks you to confirm, keeps the room code, QR code and questions, and reopens an ended poll on its first question. People already in the room can vote again straight away.
+
 ### As a Participant
 1. Go to the live URL or enter the room code
 2. Wait for the host to start

@@ -59,6 +59,17 @@ const Poll = {
     await Sync.update(`polls/${code}`, { status: 'ended' });
   },
 
+  // Manual reset: clear every vote in the room (all questions) so it can be reused
+  // for the next class. People already in the room stay joined and can vote again.
+  // An ended poll reopens on its first question.
+  async resetVotes(code) {
+    await Sync.ref(`polls/${code}/responses`).remove();
+    const poll = await Sync.get(`polls/${code}`);
+    if (poll && poll.status === 'ended') {
+      await Sync.update(`polls/${code}`, { status: 'active', currentQuestion: 0 });
+    }
+  },
+
   async submitVote(code, questionId, answer) {
     await Sync.set(`polls/${code}/responses/${questionId}/${Sync.sessionId}`, answer);
   },

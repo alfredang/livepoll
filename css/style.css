@@ -580,10 +580,12 @@ body {
 .host-code { font-size: 0.85rem; color: var(--text-dim); font-weight: 600; }
 .host-progress { font-size: 0.9rem; color: var(--text-dim); font-weight: 500; flex: 1; text-align: center; }
 .host-controls { display: flex; gap: 10px; }
+.btn-reset:hover { border-color: #ff6b6b; color: #ff6b6b; }
 
 #screen-host-active[data-results] .host-controls,
 #screen-host-active[data-results-ended="true"] .host-sidebar,
 #screen-host-active[data-results-ended="true"] .host-progress,
+#screen-host-active[data-results-unavailable] .btn-reset,
 #screen-host-active[data-results-unavailable] .host-sidebar,
 #screen-host-active[data-results-unavailable] .host-progress,
 #screen-host-active[data-results-unavailable] .host-question-text,
